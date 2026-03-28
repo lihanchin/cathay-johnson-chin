@@ -1,6 +1,5 @@
 package org.example.cathayjohnsonchin.dto.currency;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

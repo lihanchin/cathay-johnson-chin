@@ -97,8 +97,8 @@ public class CurrencyControllerTest {
         currencyDto.setChineseName("歐元");
 
         given(currencyService.create(argThat(req ->
-                "eur".equals(req.getCode()) &&
-                "歐元".equals(req.getChineseName())
+                        "eur".equals(req.getCode()) &&
+                                "歐元".equals(req.getChineseName())
                 )
         )).willReturn(currencyDto);
 
@@ -124,9 +124,9 @@ public class CurrencyControllerTest {
         currencyDto.setChineseName("英鎊");
 
         given(currencyService.update(eq(id), argThat(req ->
-                "gbp".equals(req.getCode()) &&
-                "英鎊".equals(req.getChineseName())
-        )
+                        "gbp".equals(req.getCode()) &&
+                                "英鎊".equals(req.getChineseName())
+                )
         )).willReturn(currencyDto);
 
         mockMvc.perform(put("/api/currencies/id/{id}", id)

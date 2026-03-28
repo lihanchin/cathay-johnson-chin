@@ -19,7 +19,8 @@ public class CurrencyService {
     }
 
     public CurrencyDto create(CurrencyCreateRequest request) {
-        if (currencyRepository.existsByCode(request.getCode())) {
+        String normalizedCode = request.getCode().trim().toLowerCase();
+        if (currencyRepository.existsByCode(normalizedCode)) {
             throw new ApiException(ResultCode.DUPLICATE_DATA);
         }
 
@@ -35,24 +36,39 @@ public class CurrencyService {
     }
 
     public CurrencyDto findById(Integer id) {
-        Currency currency = currencyRepository.findById(id)
-                .orElseThrow(() -> new ApiException(ResultCode.NOT_FOUND));
+        try {
+            Currency currency = currencyRepository.findById(id)
+                    .orElseThrow(() -> new ApiException(ResultCode.NOT_FOUND));
 
-        return toDto(currency);
+            return toDto(currency);
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApiException(ResultCode.DATABASE_ERROR, e);
+        }
     }
 
     public CurrencyDto findByCode(String code) {
-        Currency currency = currencyRepository.findCurrencyByCode(code)
-                .orElseThrow(() -> new ApiException(ResultCode.NOT_FOUND));
-
-        return toDto(currency);
+        try {
+            Currency currency = currencyRepository.findCurrencyByCode(code.trim().toLowerCase())
+                    .orElseThrow(() -> new ApiException(ResultCode.NOT_FOUND));
+            return toDto(currency);
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApiException(ResultCode.DATABASE_ERROR, e);
+        }
     }
 
     public List<CurrencyDto> findByAll() {
-        return currencyRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .toList();
+        try {
+            return currencyRepository.findAll()
+                    .stream()
+                    .map(this::toDto)
+                    .toList();
+        } catch (Exception e) {
+            throw new ApiException(ResultCode.DATABASE_ERROR, e);
+        }
     }
 
     public CurrencyDto update(Integer id, CurrencyUpdateRequest request) {
@@ -87,7 +103,7 @@ public class CurrencyService {
     private CurrencyDto toDto(Currency currency) {
         return CurrencyDto.builder()
                 .id(currency.getId())
-                .code(currency.getCode())
+                .code(currency.getCode().toUpperCase())
                 .chineseName(currency.getChineseName())
                 .build();
     }

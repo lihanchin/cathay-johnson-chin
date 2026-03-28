@@ -1,5 +1,7 @@
 package org.example.cathayjohnsonchin.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.example.cathayjohnsonchin.dto.currency.*;
 import org.example.cathayjohnsonchin.service.CurrencyService;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +31,7 @@ public class CurrencyController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<CurrencyResponse> getById(@PathVariable Integer id) {
+    public ResponseEntity<CurrencyResponse> getById(@PathVariable @NotNull Integer id) {
         CurrencyDto currency = currencyService.findById(id);
 
         return ResponseEntity.ok(
@@ -40,7 +42,7 @@ public class CurrencyController {
     }
 
     @GetMapping("/code/{code}")
-    public ResponseEntity<CurrencyResponse> getByCode(@PathVariable String code) {
+    public ResponseEntity<CurrencyResponse> getByCode(@PathVariable @NotNull String code) {
         CurrencyDto currency = currencyService.findByCode(code);
 
         return ResponseEntity.ok(
@@ -51,7 +53,7 @@ public class CurrencyController {
     }
 
     @PostMapping
-    public ResponseEntity<CurrencyResponse> create(@RequestBody CurrencyCreateRequest request) {
+    public ResponseEntity<CurrencyResponse> create(@Valid @RequestBody CurrencyCreateRequest request) {
         CurrencyDto dto = currencyService.create(request);
 
         return ResponseEntity.ok(CurrencyResponse.builder()
@@ -61,7 +63,7 @@ public class CurrencyController {
     }
 
     @PutMapping({"/id/{id}"})
-    public ResponseEntity<CurrencyResponse> update(@PathVariable Integer id, @RequestBody CurrencyUpdateRequest request) {
+    public ResponseEntity<CurrencyResponse> update(@PathVariable @NotNull Integer id, @RequestBody CurrencyUpdateRequest request) {
         CurrencyDto dto = currencyService.update(id, request);
 
         return ResponseEntity.ok(CurrencyResponse.builder()
@@ -70,7 +72,7 @@ public class CurrencyController {
     }
 
     @DeleteMapping("/id/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable @NotNull Integer id) {
         currencyService.delete(id);
         return ResponseEntity.noContent().build();
     }

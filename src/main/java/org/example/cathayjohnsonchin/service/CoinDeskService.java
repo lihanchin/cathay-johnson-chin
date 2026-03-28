@@ -7,11 +7,9 @@ import org.example.cathayjohnsonchin.dto.coinDesk.TransformedDataResponse;
 import org.example.cathayjohnsonchin.dto.currency.CurrencyDto;
 import org.example.cathayjohnsonchin.exception.ApiException;
 import org.example.cathayjohnsonchin.model.ResultCode;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,18 +17,17 @@ import java.util.stream.Collectors;
 @Service
 public class CoinDeskService {
 
-    private final WebClient coinDeskClient;
+    private final RestTemplate restTemplate;
     private final CurrencyService currencyService;
+    private final String COINDESK_URL = "https://kengp.github.io/blog/coindesk.json";
 
-    public CoinDeskService(@Qualifier("coinDeskClient") WebClient coinDeskClient, CurrencyService currencyService) {
-        this.coinDeskClient = coinDeskClient;
+    public CoinDeskService(RestTemplate restTemplate, CurrencyService currencyService) {
+        this.restTemplate = restTemplate;
         this.currencyService = currencyService;
     }
 
     public TransformedDataResponse getTransformedData() {
-        RawDataResponse raw = this.getRawData()
-                .blockOptional()
-                .orElseThrow(() -> new ApiException(ResultCode.EXTERNAL_API_NO_DATA));
+        RawDataResponse raw = this.getRawData();
 
         Map<String, String> codeLabelMap = currencyService.findByAll()
                 .stream()
@@ -51,17 +48,18 @@ public class CoinDeskService {
                                     .build();
                         }
                 ));
+
         return TransformedDataResponse.builder()
                 .updateTimeUtc(raw.getTime().getUpdatedISO())
                 .currenciesMap(transformedData)
                 .build();
     }
 
-    public Mono<RawDataResponse> getRawData() {
-        return coinDeskClient.get()
-                .uri("/blog/coindesk.json")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(RawDataResponse.class);
+    public RawDataResponse getRawData() {
+        try {
+            return restTemplate.getForObject(COINDESK_URL, RawDataResponse.class);
+        } catch (RestClientException e) {
+            throw new ApiException(ResultCode.EXTERNAL_API_ERROR, e);
+        }
     }
 }

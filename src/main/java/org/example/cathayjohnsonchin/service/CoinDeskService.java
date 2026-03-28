@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,7 @@ public class CoinDeskService {
     private final RestTemplate restTemplate;
     private final CurrencyService currencyService;
     private final String COINDESK_URL = "https://kengp3.github.io/blog/coindesk.json";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
     public CoinDeskService(RestTemplate restTemplate, CurrencyService currencyService) {
         this.restTemplate = restTemplate;
@@ -49,8 +52,16 @@ public class CoinDeskService {
                         }
                 ));
 
+        String formattedTime = "";
+        try {
+            OffsetDateTime odt = OffsetDateTime.parse(raw.getTime().getUpdatedISO());
+            formattedTime = odt.format(FORMATTER);
+        } catch (Exception e) {
+            formattedTime = raw.getTime().getUpdatedISO();
+        }
+
         return TransformedDataResponse.builder()
-                .updateTimeUtc(raw.getTime().getUpdatedISO())
+                .updateTimeUtc(formattedTime)
                 .currenciesMap(transformedData)
                 .build();
     }

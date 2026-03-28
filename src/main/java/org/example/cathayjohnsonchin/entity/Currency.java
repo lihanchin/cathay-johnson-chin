@@ -1,8 +1,9 @@
 package org.example.cathayjohnsonchin.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.CurrentTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -22,10 +23,12 @@ public class Currency {
     @Column(nullable = false)
     private String chineseName;
 
+    @CurrentTimestamp
     private LocalDateTime createdAt;
 
     private String createdUser = "system";
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     private String updatedUser = "system";
@@ -36,28 +39,5 @@ public class Currency {
 
     public void setChineseName(String chineseName) {
         this.chineseName = chineseName.trim();
-    }
-
-    @PrePersist
-    public void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-
-        if (this.createdUser == null) {
-            this.createdUser = "system";
-        }
-        if (this.updatedUser == null) {
-            this.updatedUser = "system";
-        }
-
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-        if (this.updatedUser == null) {
-            this.updatedUser = "system";
-        }
     }
 }

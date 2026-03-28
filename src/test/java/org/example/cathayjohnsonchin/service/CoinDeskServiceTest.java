@@ -94,7 +94,7 @@ class CoinDeskServiceTest {
         TransformedDataResponse result = coinDeskService.getTransformedData();
 
         assertNotNull(result);
-        assertEquals("2024-09-02T07:07:20+00:00", result.getUpdateTimeUtc());
+        assertEquals("2024/09/02 07:07:20", result.getUpdateTimeUtc());
         assertEquals(3, result.getCurrenciesMap().size());
 
         assertTrue(result.getCurrenciesMap().containsKey("USD"));
@@ -114,7 +114,7 @@ class CoinDeskServiceTest {
         TransformedDataResponse result = coinDeskService.getTransformedData();
 
         assertNotNull(result);
-        assertEquals("2024-09-02T07:07:20+00:00", result.getUpdateTimeUtc());
+        assertEquals("2024/09/02 07:07:20", result.getUpdateTimeUtc());
         assertEquals(3, result.getCurrenciesMap().size());
 
         assertTrue(result.getCurrenciesMap().containsKey("USD"));
@@ -124,5 +124,42 @@ class CoinDeskServiceTest {
         assertTrue(result.getCurrenciesMap().containsKey("GBP"));
         assertEquals("GBP", result.getCurrenciesMap().get("GBP").getCode());
         assertNull(result.getCurrenciesMap().get("GBP").getChineseName());
+    }
+
+    @Test
+    void getTransformedData_shouldFallbackToOriginalTime_whenDateFormatIsInvalid() {
+        RawDataResponse.TimeInfo invalidTimeInfo = new RawDataResponse.TimeInfo(
+                "Invalid Time",
+                "not-an-iso-date",
+                "Invalid Time uk"
+        );
+        RawDataResponse invalidTimeRawData = new RawDataResponse(invalidTimeInfo, "Disclaimer", "Bitcoin", Map.of());
+
+        when(restTemplate.getForObject(anyString(), eq(RawDataResponse.class))).thenReturn(invalidTimeRawData);
+        when(currencyService.findByAll()).thenReturn(List.of());
+
+        TransformedDataResponse result = coinDeskService.getTransformedData();
+
+        assertNotNull(result);
+
+        assertEquals("not-an-iso-date", result.getUpdateTimeUtc());
+    }
+
+    @Test
+    void getTransformedData_shouldHandleDifferentIsoFormats() {
+        RawDataResponse.TimeInfo isoWithZTimeInfo = new RawDataResponse.TimeInfo(
+                "Sep 2, 2024 07:07:20 UTC",
+                "2024-09-02T07:07:20Z",
+                "Sep 2, 2024 at 08:07 BST"
+        );
+        RawDataResponse isoWithZRawData = new RawDataResponse(isoWithZTimeInfo, "Disclaimer", "Bitcoin", Map.of());
+
+        when(restTemplate.getForObject(anyString(), eq(RawDataResponse.class))).thenReturn(isoWithZRawData);
+        when(currencyService.findByAll()).thenReturn(List.of());
+
+        TransformedDataResponse result = coinDeskService.getTransformedData();
+
+        assertNotNull(result);
+        assertEquals("2024/09/02 07:07:20", result.getUpdateTimeUtc());
     }
 }

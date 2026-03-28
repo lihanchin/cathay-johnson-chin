@@ -85,7 +85,7 @@ class CoinDeskControllerTest {
     @Test
     void getTransformedData_shouldReturnTransformedDataResponse() throws Exception {
         TransformedDataResponse mockResponse = TransformedDataResponse.builder()
-                .updateTimeUtc("2024-09-02T07:07:20+00:00")
+                .updateTimeUtc("2024/09/02 07:07:20")
                 .currenciesMap(mockCurrenciesMap)
                 .build();
 
@@ -94,7 +94,7 @@ class CoinDeskControllerTest {
         mockMvc.perform(get("/api/coindesk/transformed")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.updateTimeUtc").value("2024-09-02T07:07:20+00:00"))
+                .andExpect(jsonPath("$.updateTimeUtc").value("2024/09/02 07:07:20"))
                 .andExpect(jsonPath("$.currenciesMap.USD.code").value("USD"))
                 .andExpect(jsonPath("$.currenciesMap.USD.chineseName").value("美金"));
 

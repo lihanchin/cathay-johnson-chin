@@ -19,7 +19,7 @@ public class CoinDeskService {
 
     private final RestTemplate restTemplate;
     private final CurrencyService currencyService;
-    private final String COINDESK_URL = "https://kengp.github.io/blog/coindesk.json";
+    private final String COINDESK_URL = "https://kengp3.github.io/blog/coindesk.json";
 
     public CoinDeskService(RestTemplate restTemplate, CurrencyService currencyService) {
         this.restTemplate = restTemplate;

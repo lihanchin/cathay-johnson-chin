@@ -8,23 +8,25 @@ import org.example.cathayjohnsonchin.service.CoinDeskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebFluxTest(CoinDeskController.class)
+@WebMvcTest(CoinDeskController.class)
 class CoinDeskControllerTest {
 
     @Autowired
-    private WebTestClient webTestClient;
+    private MockMvc mockMvc;
 
     @MockBean
     private CoinDeskService coinDeskService;
@@ -36,7 +38,7 @@ class CoinDeskControllerTest {
     private Map<String, CurrencyTransformedInfo> mockCurrenciesMap;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mockTimeInfo = new RawDataResponse.TimeInfo(
                 "Sep 2, 2024 07:07:20 UTC",
                 "2024-09-02T07:07:20+00:00",
@@ -62,28 +64,26 @@ class CoinDeskControllerTest {
     }
 
     @Test
-    void getRawData_shouldReturnRawDataResponse() {
+    void getRawData_shouldReturnRawDataResponse() throws Exception {
         RawDataResponse mockResponse = new RawDataResponse(
                 mockTimeInfo,
                 "test",
                 "test123",
                 mockBpiMap);
 
-        given(coinDeskService.getRawData()).willReturn(Mono.just(mockResponse));
+        given(coinDeskService.getRawData()).willReturn(mockResponse);
 
-        webTestClient.get()
-                .uri("/api/coindesk/raw")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(RawDataResponse.class)
-                .isEqualTo(mockResponse);
+        mockMvc.perform(get("/api/coindesk/raw")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.chartName").value("test123"))
+                .andExpect(jsonPath("$.disclaimer").value("test"));
 
         verify(coinDeskService).getRawData();
     }
 
     @Test
-    void getTransformedData_shouldReturnTransformedDataResponse() {
+    void getTransformedData_shouldReturnTransformedDataResponse() throws Exception {
         TransformedDataResponse mockResponse = TransformedDataResponse.builder()
                 .updateTimeUtc("2024-09-02T07:07:20+00:00")
                 .currenciesMap(mockCurrenciesMap)
@@ -91,13 +91,12 @@ class CoinDeskControllerTest {
 
         given(coinDeskService.getTransformedData()).willReturn(mockResponse);
 
-        webTestClient.get()
-                .uri("/api/coindesk/transformed")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(TransformedDataResponse.class)
-                .isEqualTo(mockResponse);
+        mockMvc.perform(get("/api/coindesk/transformed")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updateTimeUtc").value("2024-09-02T07:07:20+00:00"))
+                .andExpect(jsonPath("$.currenciesMap.USD.code").value("USD"))
+                .andExpect(jsonPath("$.currenciesMap.USD.chineseName").value("美金"));
 
         verify(coinDeskService).getTransformedData();
     }

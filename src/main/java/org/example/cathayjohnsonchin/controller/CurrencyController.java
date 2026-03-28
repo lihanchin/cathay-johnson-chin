@@ -1,7 +1,6 @@
 package org.example.cathayjohnsonchin.controller;
 
 import org.example.cathayjohnsonchin.dto.currency.*;
-import org.example.cathayjohnsonchin.dto.general.ErrorResponse;
 import org.example.cathayjohnsonchin.service.CurrencyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,7 @@ public class CurrencyController {
         );
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<CurrencyResponse> getById(@PathVariable Integer id) {
         CurrencyDto currency = currencyService.findById(id);
 
@@ -40,7 +39,7 @@ public class CurrencyController {
         );
     }
 
-    @GetMapping("/{code}")
+    @GetMapping("/code/{code}")
     public ResponseEntity<CurrencyResponse> getByCode(@PathVariable String code) {
         CurrencyDto currency = currencyService.findByCode(code);
 
@@ -61,7 +60,7 @@ public class CurrencyController {
         );
     }
 
-    @PutMapping({"/{id}"})
+    @PutMapping({"/id/{id}"})
     public ResponseEntity<CurrencyResponse> update(@PathVariable Integer id, @RequestBody CurrencyUpdateRequest request) {
         CurrencyDto dto = currencyService.update(id, request);
 
@@ -70,8 +69,8 @@ public class CurrencyController {
                         build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ErrorResponse> delete(@PathVariable Integer id) {
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         currencyService.delete(id);
         return ResponseEntity.noContent().build();
     }
